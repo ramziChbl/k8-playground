@@ -4,9 +4,9 @@
   become: true
   tasks:
     - name: Disable swapoff
-      ansible.builtin.command: swapoff -a
+      command: swapoff -a
     - name: Prevent swap from turning on after reboots by commenting it in the /etc/fstab file
-      ansible.builtin.command: sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+      command: sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
     - name: Let iptables see bridged traffic
       community.general.modprobe:
@@ -37,7 +37,7 @@
           net.bridge.bridge-nf-call-ip6tables = 1
 
     - name: Apply sysctl params without reboot
-      ansible.builtin.command: sysctl --system
+      command: sysctl --system
 
     - name: Install containerd
       apt:
@@ -52,7 +52,7 @@
         state: directory
 
     - name: 
-      ansible.builtin.shell: containerd config default | sudo tee /etc/containerd/config.toml
+      shell: containerd config default | sudo tee /etc/containerd/config.toml
 
     - name: restart containerd
       systemd:
@@ -75,7 +75,7 @@
         dest: /usr/share/keyrings/kubernetes-archive-keyring.gpg
 
     - name: add the Kubernetes apt repository
-      ansible.builtin.shell: echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
+      shell: echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
 
     - name: install kubeadm, kubelet, kubectl
       apt:
