@@ -91,15 +91,23 @@
     #     name: python
     #     selection: hold
 
-    # Initialize the cluster
+
+- name: Initialize kubeadm cluster
+  hosts: master
+  become: true
+  tasks:
     - name: initialize the cluster
-      shell: kubeadm init --pod-network-cidr=10.244.0.0/16
+      shell: kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address 192.168.77.15
       register: kubeadm_output
     
     - debug: var=kubeadm_output.stdout_lines
 
+    - name: write kubeadm output to file
+      copy:
+        content: "{{ kubeadm_output.stdout_lines }}"
+        dest: "/vagrant/kubeadmOutput.txt"
+
     - name: create .kube folder
-      become: yes
       become_user: vagrant
       file:
         #path: "{{ ansible_env.HOME }}/.kube"
@@ -107,7 +115,6 @@
         state: directory
 
     - name: copy configuration file
-      become: yes
       #become_user: vagrant
       copy:
         remote_src: yes
@@ -118,15 +125,16 @@
         group: vagrant
         mode: 0644
 
-    # 
     - name: deploy a pod network (flannel) to the cluster
-      become: yes
       become_user: vagrant
       shell: kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
 
-
-
-
-
-
-
+- name: Join cluster
+  hosts: worker1
+  tasks:
+    - name: Prepare to join
+      file:
+        path: /home/vagrant/readyToJoin
+        state: touch
+        content: "Alright let's do this!"
+        

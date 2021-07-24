@@ -5,8 +5,18 @@ Vagrant.configure("2") do |config|
 
   config.vm.define 'master' do |master|
     master.vm.box = "ubuntu/xenial64"
+    master.vm.hostname = "master"
+    master.vm.network "private_network", ip: "192.168.77.15"#, mac: "080027xxxxxx"
+    #config.vm.network "private_network"#, virtualbox__intnet: true
     #master.vm.provision "shell", path: "scripts/install_docker.sh"
     #master.vm.provision "shell", path: "scripts/install_kubeadm_stack.sh"
+  end
+
+  config.vm.define 'worker1' do |worker1|
+    worker1.vm.box = "ubuntu/xenial64"
+    worker1.vm.hostname = "worker1"
+    worker1.vm.network "private_network", ip: "192.168.77.16"
+    #config.vm.network "private_network"#, virtualbox__intnet: true
   end
 
   # Disable automatic box update checking. If you disable this, then
