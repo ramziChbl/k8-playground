@@ -3,6 +3,7 @@
   hosts: all
   become: true
   tasks:
+    - debug: msg="{{ ansible_facts }}" #enp0s8
     - name: Disable swapoff
       command: swapoff -a
     - name: Prevent swap from turning on after reboots by commenting it in the /etc/fstab file
@@ -99,10 +100,6 @@
     - name: initialize the cluster
       shell: kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address 192.168.77.15
       register: kubeadm_output
-      #- local_action: 
-      #  module: copy
-      #  content: "{{ kubeadm_output }}"
-      #  dest: /vagrant/directCopy.txt
 
     - debug: var=kubeadm_output.stdout_lines
 
@@ -110,16 +107,6 @@
       copy:
         content: "{{ kubeadm_output.stdout_lines[-2:] | join('\n') }}"
         dest: "/vagrant/kubeadm_joind.sh"
-
-    #- name: write kubeadm output to file
-    #  copy:
-    #    content: "{{ kubeadm_output.stdout_lines }}"
-    #    dest: "/vagrant/kubeadmOutput.json"
-
-    #- name: write kubeadm output to file
-    #  copy:
-    #    content: "{{ kubeadm_output }}"
-    #    dest: "/vagrant/kubeadmOutput.txt"
 
     - name: create .kube folder
       become_user: vagrant
@@ -165,3 +152,20 @@
 
     #- name: Copy join command to local file
     #  local_action: copy content={{ kubeadm_output.stdout_lines[-2:] }} dest="/vagrant/join-command"
+
+- name: Change the internal IP of Kubernetes nodes (Problem only with VirtualBox that sets node ip to first interface 10.0.2.15)
+  hosts: all
+  become: true
+  tasks:
+    - name: Add --node [IP] to KUBELET_KUBECONFIG_ARGS in 10-kubeadm.conf
+      lineinfile:
+        path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+        #state: present
+        regex: "^Environment=\"KUBELET_KUBECONFIG_ARGS"
+        line: "Environment=\"KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf --node-ip {{ ansible_facts.enp0s8.ipv4.address }} \""
+
+    - name: Restart kubelet
+      ansible.builtin.systemd:
+        state: restarted
+        daemon_reload: yes
+        name: kubelet
