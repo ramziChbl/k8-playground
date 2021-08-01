@@ -51,7 +51,7 @@
         path: /etc/containerd
         state: directory
 
-    - name: 
+    - name:
       shell: containerd config default | sudo tee /etc/containerd/config.toml
 
     - name: restart containerd
@@ -99,13 +99,27 @@
     - name: initialize the cluster
       shell: kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address 192.168.77.15
       register: kubeadm_output
-    
+      #- local_action: 
+      #  module: copy
+      #  content: "{{ kubeadm_output }}"
+      #  dest: /vagrant/directCopy.txt
+
     - debug: var=kubeadm_output.stdout_lines
 
-    - name: write kubeadm output to file
+    - name: write last 2 lines of kubeadm output
       copy:
-        content: "{{ kubeadm_output.stdout_lines }}"
-        dest: "/vagrant/kubeadmOutput.txt"
+        content: "{{ kubeadm_output.stdout_lines[-2:] | join('\n') }}"
+        dest: "/vagrant/kubeadm_joind.sh"
+
+    #- name: write kubeadm output to file
+    #  copy:
+    #    content: "{{ kubeadm_output.stdout_lines }}"
+    #    dest: "/vagrant/kubeadmOutput.json"
+
+    #- name: write kubeadm output to file
+    #  copy:
+    #    content: "{{ kubeadm_output }}"
+    #    dest: "/vagrant/kubeadmOutput.txt"
 
     - name: create .kube folder
       become_user: vagrant
@@ -127,14 +141,27 @@
 
     - name: deploy a pod network (flannel) to the cluster
       become_user: vagrant
-      shell: kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
+      command: kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
 
 - name: Join cluster
   hosts: worker1
+  become: true
+  vars:
+    kubeadm_join_command: "{{ lookup('file', '/home/ramzi/projects/k8-playground/kubeadm_joind.sh') }}"
   tasks:
     - name: Prepare to join
       file:
         path: /home/vagrant/readyToJoin
         state: touch
         content: "Alright let's do this!"
-        
+
+    - debug: msg="{{ kubeadm_join_command | replace('\\\n\t', ' ')}}"
+
+    - name: Execute join command
+      command: "{{ kubeadm_join_command | replace('\\\n\t', ' ') }}"
+      register: join_command_output
+
+    - debug: msg="{{ join_command_output.stdout_lines }}"
+
+    #- name: Copy join command to local file
+    #  local_action: copy content={{ kubeadm_output.stdout_lines[-2:] }} dest="/vagrant/join-command"
