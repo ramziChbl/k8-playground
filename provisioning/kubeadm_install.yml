@@ -98,7 +98,7 @@
   become: true
   tasks:
     - name: initialize the cluster
-      shell: kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address 192.168.77.15
+      shell: "kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address {{ ansible_facts.enp0s8.ipv4.address }}"
       register: kubeadm_output
 
     - debug: var=kubeadm_output.stdout_lines
@@ -131,7 +131,7 @@
       command: kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
 
 - name: Join cluster
-  hosts: worker1
+  hosts: worker
   become: true
   vars:
     kubeadm_join_command: "{{ lookup('file', '/home/ramzi/projects/k8-playground/kubeadm_joind.sh') }}"
