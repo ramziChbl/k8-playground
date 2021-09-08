@@ -1,23 +1,68 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+MASTER_NODES_NUMBER = 1
+WORKER_NODES_NUMBER = 1
+
 Vagrant.configure("2") do |config|
 
-  config.vm.define 'master' do |master|
-    master.vm.box = "ubuntu/xenial64"
-    master.vm.hostname = "master"
-    master.vm.network "private_network", ip: "192.168.77.15"#, mac: "080027xxxxxx"
-    #config.vm.network "private_network"#, virtualbox__intnet: true
-    #master.vm.provision "shell", path: "scripts/install_docker.sh"
-    #master.vm.provision "shell", path: "scripts/install_kubeadm_stack.sh"
+  config.vm.provider "virtualbox" do |vb|
+  #   # Display the VirtualBox GUI when booting the machine
+  #   vb.gui = true
+
+    # Customize the amount of memory on the VM:
+    vb.memory = "2048"
   end
 
-  config.vm.define 'worker1' do |worker1|
-    worker1.vm.box = "ubuntu/xenial64"
-    worker1.vm.hostname = "worker1"
-    worker1.vm.network "private_network", ip: "192.168.77.16"
-    #config.vm.network "private_network"#, virtualbox__intnet: true
+  nodes = []
+
+  for i in 1..MASTER_NODES_NUMBER
+    nodes.append("master#{i}")
   end
+
+  for i in 1..WORKER_NODES_NUMBER
+    nodes.append("worker#{i}")
+  end
+
+  nodes.each_with_index do |nodeName, index|
+    if nodeName[0..5] == 'master'
+      config.vm.define "master#{nodeName[6]}" do |machine|
+        machine.vm.box = "ubuntu/xenial64"
+        machine.vm.hostname = nodeName
+        machine.vm.network "private_network", ip: "192.168.77.10#{nodeName[6]}"
+      end
+    else
+      config.vm.define "worker#{nodeName[6]}" do |machine|
+        machine.vm.box = "ubuntu/xenial64"
+        machine.vm.hostname = nodeName
+        machine.vm.network "private_network", ip: "192.168.77.20#{nodeName[6]}"
+        if index == MASTER_NODES_NUMBER + WORKER_NODES_NUMBER - 1
+          machine.vm.provision :ansible do |ansible|
+            # Disable default limit to connect to all the machines
+            ansible.limit = "all"
+            ansible.playbook = "provisioning/kubeadm_install.yml"
+            ansible.config_file = "provisioning/ansible.cfg"
+            ansible.groups = {
+              "master" => nodes[0..MASTER_NODES_NUMBER-1],
+              "worker" => nodes[MASTER_NODES_NUMBER..-1],
+            }
+          end
+        end
+      end
+    end
+  end
+  
+#  config.vm.define 'master' do |master|
+#    master.vm.box = "ubuntu/xenial64"
+#    master.vm.hostname = "master"
+#    master.vm.network "private_network", ip: "192.168.77.15"#, mac: "080027xxxxxx"
+#  end
+
+#  config.vm.define 'worker1' do |worker1|
+#    worker1.vm.box = "ubuntu/xenial64"
+#    worker1.vm.hostname = "worker1"
+#    worker1.vm.network "private_network", ip: "192.168.77.16"
+#  end
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -54,18 +99,13 @@ Vagrant.configure("2") do |config|
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
   #
-  config.vm.provider "virtualbox" do |vb|
-  #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
-  #
-    # Customize the amount of memory on the VM:
-    vb.memory = "2048"
-  end
+  
 
-  config.vm.provision "ansible" do |ansible|
-    ansible.playbook = "provisioning/kubeadm_install.yml"
-    ansible.config_file = "provisioning/ansible.cfg"
-  end
+#  config.vm.provision "ansible" do |ansible|
+#    ansible.playbook = "provisioning/kubeadm_install.yml"
+#    ansible.config_file = "provisioning/ansible.cfg"
+#  end
+
 
   #
   # View the documentation for the provider you are using for more
