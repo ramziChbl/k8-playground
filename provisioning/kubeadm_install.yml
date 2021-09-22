@@ -3,7 +3,6 @@
   hosts: all
   become: true
   tasks:
-    - debug: msg="{{ ansible_facts }}" #enp0s8
     - name: Disable swapoff
       command: swapoff -a
     - name: Prevent swap from turning on after reboots by commenting it in the /etc/fstab file
@@ -106,7 +105,7 @@
     - name: write last 2 lines of kubeadm output
       copy:
         content: "{{ kubeadm_output.stdout_lines[-2:] | join('\n') }}"
-        dest: "/vagrant/kubeadm_joind.sh"
+        dest: "/vagrant/provisioning/kubeadm_joind.sh"
 
     - name: create .kube folder
       become_user: vagrant
@@ -134,14 +133,8 @@
   hosts: worker
   become: true
   vars:
-    kubeadm_join_command: "{{ lookup('file', '/home/ramzi/projects/k8-playground/kubeadm_joind.sh') }}"
+    kubeadm_join_command: "{{ lookup('file', 'kubeadm_joind.sh') }}"
   tasks:
-    - name: Prepare to join
-      file:
-        path: /home/vagrant/readyToJoin
-        state: touch
-        content: "Alright let's do this!"
-
     - debug: msg="{{ kubeadm_join_command | replace('\\\n\t', ' ')}}"
 
     - name: Execute join command
@@ -149,9 +142,6 @@
       register: join_command_output
 
     - debug: msg="{{ join_command_output.stdout_lines }}"
-
-    #- name: Copy join command to local file
-    #  local_action: copy content={{ kubeadm_output.stdout_lines[-2:] }} dest="/vagrant/join-command"
 
 - name: Change the internal IP of Kubernetes nodes (Problem only with VirtualBox that sets node ip to first interface 10.0.2.15)
   hosts: all
