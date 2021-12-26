@@ -36,8 +36,8 @@ Vagrant.configure("2") do |config|
           machine.vm.provision :ansible do |ansible|
             # Disable default limit to connect to all the machines
             ansible.limit = "all"
-            ansible.playbook = "provisioning/kubeadm_install.yml"
-            ansible.config_file = "provisioning/ansible.cfg"
+            ansible.playbook = "provisioning/kubernetes/ansible/kubeadm_install.yml"
+            ansible.config_file = "provisioning/kubernetes/ansible/ansible.cfg"
             ansible.groups = {
               "master" => nodes[0..MASTER_NODES_NUMBER-1],
               "worker" => nodes[MASTER_NODES_NUMBER..-1],

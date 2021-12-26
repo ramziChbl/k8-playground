@@ -100,7 +100,7 @@
     - name: write last 2 lines of kubeadm output
       copy:
         content: "{{ kubeadm_output.stdout_lines[-2:] | join('\n') }}"
-        dest: "/vagrant/provisioning/kubeadm_joind.sh"
+        dest: "/vagrant/provisioning/kubernetes/ansible/kubeadm_joind.sh"
 
     - name: create .kube folder
       become_user: vagrant
