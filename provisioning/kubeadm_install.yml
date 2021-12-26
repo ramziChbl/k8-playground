@@ -86,11 +86,6 @@
           - kubeadm
           - kubectl
 
-    # - name: Prevent kubelet. kubeadm, kubectl from being upgraded
-    #   dpkg_selections:
-    #     name: python
-    #     selection: hold
-
 
 - name: Initialize kubeadm cluster
   hosts: master

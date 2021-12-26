@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 MASTER_NODES_NUMBER = 1
-WORKER_NODES_NUMBER = 1
+WORKER_NODES_NUMBER = 2
 
 Vagrant.configure("2") do |config|
 
