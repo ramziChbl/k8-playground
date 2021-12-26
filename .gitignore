@@ -1,3 +1,3 @@
 .vagrant/
 ubuntu-xenial-16.04-cloudimg-console.log
-provisioning/kubeadm_joind.sh
+provisioning/kubernetes/ansible/kubeadm_joind.sh
