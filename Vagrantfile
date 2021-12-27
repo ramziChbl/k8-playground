@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 MASTER_NODES_NUMBER = 1
-WORKER_NODES_NUMBER = 2
+WORKER_NODES_NUMBER = 1
 
 Vagrant.configure("2") do |config|
 
@@ -36,8 +36,9 @@ Vagrant.configure("2") do |config|
           machine.vm.provision :ansible do |ansible|
             # Disable default limit to connect to all the machines
             ansible.limit = "all"
-            ansible.playbook = "provisioning/kubernetes/ansible/kubeadm_install.yml"
-            ansible.config_file = "provisioning/kubernetes/ansible/ansible.cfg"
+            #ansible.playbook = "provisioning/kubernetes/ansible/kubeadm_install.yml"
+            ansible.playbook = "provisioning/k3s/ansible/k3s_install.yml"
+            ansible.config_file = "provisioning/k3s/ansible/ansible.cfg"
             ansible.groups = {
               "master" => nodes[0..MASTER_NODES_NUMBER-1],
               "worker" => nodes[MASTER_NODES_NUMBER..-1],

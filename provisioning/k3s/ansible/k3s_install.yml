@@ -1,0 +1,32 @@
+---
+- name: Install k3s on master nodes
+  hosts: master
+  become: true
+  tasks:
+
+    - name: Download and execute script
+      shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--node-external-ip 192.168.77.101" sh -
+      register: master_output
+    
+    - debug: var=master_output.stdout_lines
+
+    - name: Get the node token from the master
+      shell: cat /var/lib/rancher/k3s/server/node-token
+      register: node_token
+
+    - name: write last 2 lines of kubeadm output
+      copy:
+        content: "{{ node_token.stdout }}"
+        dest: "/vagrant/provisioning/k3s/ansible/k3s_node_token"
+    
+- name: Install k3s on worker nodes
+  hosts: worker
+  become: true
+  vars:
+    node_token: "{{ lookup('file', 'k3s_node_token') }}"
+  tasks:
+    - name: Download and execute script
+      shell: curl -sfL https://get.k3s.io | K3S_URL=https://192.168.77.101:6443 K3S_TOKEN={{ node_token}} sh -
+      register: worker_output
+    
+    - debug: var=worker_output.stdout_lines
