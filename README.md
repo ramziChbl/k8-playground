@@ -4,7 +4,7 @@ Create a virtualized infrastructure to locally deploy multi-node kubernetes clus
 
 This repo was created in parallel to my study of kubernetes to easily spin up an experimentation environment.
 
-This is used for learning puposes only. To deploy a fully functional and tested production ready kubernetes cluster, there's the excellent [kubesrpay](https://kubespray.io).
+This is used for learning puposes only. To deploy a fully functional and tested production ready kubernetes cluster, there's the excellent [kubespray](https://kubespray.io).
 
 ## Vagrant
 
