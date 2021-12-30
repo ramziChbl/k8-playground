@@ -5,7 +5,7 @@
   tasks:
 
     - name: Download and execute script
-      shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--node-ip 192.168.77.101" sh -
+      shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--flannel-backend=host-gw --node-ip 192.168.77.101" sh -
       register: master_output
     
     - debug: var=master_output.stdout_lines
@@ -26,7 +26,7 @@
     node_token: "{{ lookup('file', 'k3s_node_token') }}"
   tasks:
     - name: Download and execute script
-      shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--node-ip {{ ansible_facts.enp0s8.ipv4.address }}" K3S_URL=https://192.168.77.101:6443 K3S_TOKEN={{ node_token}} sh -
+      shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--flannel-backend=host-gw --node-ip {{ ansible_facts.enp0s8.ipv4.address }}" K3S_URL=https://192.168.77.101:6443 K3S_TOKEN={{ node_token}} sh -
       register: worker_output
     
     - debug: var=worker_output.stdout_lines
