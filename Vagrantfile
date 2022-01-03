@@ -28,13 +28,13 @@ Vagrant.configure("2") do |config|
   nodes.each_with_index do |nodeName, index|
     if nodeName[0..5] == 'master'
       config.vm.define "master#{nodeName[6]}" do |machine|
-        machine.vm.box = "ubuntu/xenial64"
+        machine.vm.box = "ubuntu/focal64"
         machine.vm.hostname = nodeName
         machine.vm.network "private_network", ip: "192.168.77.10#{nodeName[6]}"
       end
     else
       config.vm.define "worker#{nodeName[6]}" do |machine|
-        machine.vm.box = "ubuntu/xenial64"
+        machine.vm.box = "ubuntu/focal64"
         machine.vm.hostname = nodeName
         machine.vm.network "private_network", ip: "192.168.77.20#{nodeName[6]}"
         if index == MASTER_NODES_NUMBER + WORKER_NODES_NUMBER - 1
