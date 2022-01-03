@@ -4,8 +4,8 @@
   become: true
   tasks:
 
-    - name: Download and execute script
-      shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--flannel-backend=host-gw --node-ip 192.168.77.101" sh -
+    - name: Download and execute k3s install script
+      shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--flannel-backend=host-gw --node-ip {{ ansible_facts.enp0s8.ipv4.address }}" sh -
       register: master_output
     
     - debug: var=master_output.stdout_lines
@@ -14,7 +14,7 @@
       shell: cat /var/lib/rancher/k3s/server/node-token
       register: node_token
 
-    - name: write last 2 lines of kubeadm output
+    - name: Save token in file '/vagrant/provisioning/k3s/ansible/k3s_node_token'
       copy:
         content: "{{ node_token.stdout }}"
         dest: "/vagrant/provisioning/k3s/ansible/k3s_node_token"
@@ -25,8 +25,8 @@
   vars:
     node_token: "{{ lookup('file', 'k3s_node_token') }}"
   tasks:
-    - name: Download and execute script
-      shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--flannel-backend=host-gw --node-ip {{ ansible_facts.enp0s8.ipv4.address }}" K3S_URL=https://192.168.77.101:6443 K3S_TOKEN={{ node_token}} sh -
+    - name: Download and execute k3s install script
+      shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--node-ip {{ ansible_facts.enp0s8.ipv4.address }}" K3S_URL=https://192.168.77.101:6443 K3S_TOKEN={{ node_token}} sh -
       register: worker_output
     
     - debug: var=worker_output.stdout_lines
