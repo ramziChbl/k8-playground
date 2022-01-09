@@ -50,3 +50,6 @@ The following had been tested  :
  - Try other kubernetes distributions : Rancher.
  - Use different provisioners : Salt, Chef, Puppet.
  - Use libvirt instead of Virtualbox
+
+## Notes
+ - Flannel is causing me a lot of headaches due to networking errors. After a week of solving most of them, some still remain like the inability to reach a pod in another network. I think I'll switch to calico
