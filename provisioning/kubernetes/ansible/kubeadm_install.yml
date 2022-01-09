@@ -91,38 +91,12 @@
   hosts: master
   become: true
   tasks:
-    - name: initialize the cluster
-      shell: "kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address {{ ansible_facts.enp0s8.ipv4.address }}"
-      register: kubeadm_output
+    - include_tasks: flannel.yaml
+      when: cni == "flannel"
 
-    - debug: var=kubeadm_output.stdout_lines
+    - include_tasks: calico.yaml
+      when: cni == "calico"
 
-    - name: write last 2 lines of kubeadm output
-      copy:
-        content: "{{ kubeadm_output.stdout_lines[-2:] | join('\n') }}"
-        dest: "/vagrant/provisioning/kubernetes/ansible/kubeadm_joind.sh"
-
-    - name: create .kube folder
-      become_user: vagrant
-      file:
-        #path: "{{ ansible_env.HOME }}/.kube"
-        path: /home/vagrant/.kube
-        state: directory
-
-    - name: copy configuration file
-      #become_user: vagrant
-      copy:
-        remote_src: yes
-        src: /etc/kubernetes/admin.conf
-        #dest: "{{ ansible_env.HOME }}/.kube/config"
-        dest: /home/vagrant/.kube/config
-        owner: vagrant
-        group: vagrant
-        mode: 0644
-
-    - name: deploy a pod network (flannel) to the cluster
-      become_user: vagrant
-      command: kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
 
 - name: Join cluster
   hosts: worker
@@ -145,7 +119,6 @@
     - name: Add --node [IP] to KUBELET_KUBECONFIG_ARGS in 10-kubeadm.conf
       lineinfile:
         path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-        #state: present
         regex: "^Environment=\"KUBELET_KUBECONFIG_ARGS"
         line: "Environment=\"KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf --node-ip {{ ansible_facts.enp0s8.ipv4.address }} \""
 
