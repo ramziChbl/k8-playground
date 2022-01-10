@@ -19,7 +19,7 @@ Most of the cluster options are specified in the Vagrantfile :
  - Kubernetes distribution :
    1. Vanilla k8s with kubeadm
    2. K3s
- - (TODO) CNI to use
+ - CNI to use : calico, flannel
 
 An option can be chosen by assigning a value to the appropriate variable in the first part of the Vagrantfile :
 
@@ -29,7 +29,8 @@ WORKER_NODES_NUMBER = 1
 
 # Kubernetes distribution used to create the cluster
 # Accepted values : kubernetes, k3s
-K8_DISTRIBUTION = "k3s" 
+K8_DISTRIBUTION = "k3s"
+CNI = "calico"
 ```
 
 ## Tests
