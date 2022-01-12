@@ -1,0 +1,11 @@
+---
+- name: Install Contour Ingress
+  hosts: master
+  become: false
+  vars:
+    cni: calico
+
+  tasks:
+    - name: Install Contour components with the provided manifest
+      shell: kubectl apply -f https://projectcontour.io/quickstart/contour.yaml
+    

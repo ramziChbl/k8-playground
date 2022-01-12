@@ -1,0 +1,32 @@
+---
+- name: initialize the cluster using Calico as a CNI
+  shell: "kubeadm init --pod-network-cidr=192.168.0.0/16 --apiserver-advertise-address {{ ansible_facts.enp0s8.ipv4.address }}"
+  register: kubeadm_output
+
+- name: write last 2 lines of kubeadm output containing the token
+  copy:
+    content: "{{ kubeadm_output.stdout_lines[-2:] | join('\n') }}"
+    dest: "/vagrant/provisioning/ansible/kubernetes/kubeadm_joind.sh"
+
+- name: create .kube folder
+  become_user: vagrant
+  file:
+    path: /home/vagrant/.kube
+    state: directory
+
+- name: copy configuration file
+  copy:
+    remote_src: yes
+    src: /etc/kubernetes/admin.conf
+    dest: /home/vagrant/.kube/config
+    owner: vagrant
+    group: vagrant
+    mode: 0644
+
+- name: Install the Calico operator and custom resource definitions
+  become_user: vagrant
+  shell: kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml
+
+- name: Install Calico by creating the necessary custom resource
+  become_user: vagrant
+  shell: kubectl create -f https://docs.projectcalico.org/manifests/custom-resources.yaml

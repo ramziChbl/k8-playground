@@ -1,0 +1,4 @@
+- import_playbook: kubernetes/kubeadm_install.yml
+  when: k8_distribution == "kubernetes"
+- import_playbook: k3s/k3s_install.yml
+  when: k8_distribution == "k3s"

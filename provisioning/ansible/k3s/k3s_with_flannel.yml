@@ -1,0 +1,3 @@
+---
+- name: Download and execute k3s install script using flannel as a CNI      
+  shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--flannel-backend=host-gw --node-ip {{ ansible_facts.enp0s8.ipv4.address }}" sh -
