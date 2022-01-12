@@ -1,4 +1,4 @@
 .vagrant/
 ubuntu-xenial-16.04-cloudimg-console.log
 provisioning/ansible/kubernetes/kubeadm_joind.sh
-provisioning/k3s/ansible/k3s_node_token
+provisioning/ansible/k3s/k3s_node_token
