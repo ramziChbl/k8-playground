@@ -23,12 +23,13 @@ kind: Service
 metadata:
   labels:
     app: kuard
-  name: kuard
+  name: kuard-clusterip
 spec:
   ports:
   - port: 80
     protocol: TCP
     targetPort: 8080
+    name: http
   selector:
     app: kuard
   sessionAffinity: None
@@ -41,8 +42,14 @@ metadata:
   labels:
     app: kuard
 spec:
-  defaultBackend:
-    service:
-      name: kuard
-      port:
-        number: 80
+  rules:
+  - host: kuard.local.com
+    http:
+      paths:
+      - path: /
+        backend:
+          service:
+            name: kuard-clusterip
+            port:
+              name: http
+        pathType: Prefix
